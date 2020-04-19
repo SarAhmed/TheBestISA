@@ -2,16 +2,16 @@
 public class ALU {
 	private static boolean Z;
 
-//	ALU control lines |     Function
-//	-------------------+-------------------
-//	       0000        |       AND
-//	       0001        |       OR
-//	       0010        |       add
-//	       0011        |     subtract
-//	       0100        | 	 multiply
-// 		   0101        | 	 shift left
-//		   0110        | 	 shift right
-//	   	   0111        | 	 slt
+	// ALU control lines | Function
+	// -------------------+-------------------
+	// 0000 | AND
+	// 0001 | OR
+	// 0010 | add
+	// 0011 | subtract
+	// 0100 | multiply
+	// 0101 | shift left
+	// 0110 | shift right
+	// 0111 | slt
 
 	public static int ALUEvaluator(String Op, int Operand1, int Operand2) {
 		int Output = 0;
@@ -24,37 +24,30 @@ public class ALU {
 		case "0001":
 			Output = Operand1 | Operand2;
 			OperationName = "OR";
-
 			break;
 		case "0010":
 			Output = Operand1 + Operand2;
 			OperationName = "add";
-
 			break;
 		case "0011":
 			Output = Operand1 - Operand2;
 			OperationName = "sub";
-
 			break;
 		case "0100":
 			Output = Operand1 * Operand2;
 			OperationName = "multiply";
-
 			break;
 		case "0101":
 			Output = Operand1 << Operand2;
 			OperationName = "shift left";
-
 			break;
 		case "0110":
 			Output = Operand1 >> Operand2;
 			OperationName = "shift right";
-
 			break;
 		case "0111":
 			Output = (Operand1 < Operand2) ? 1 : 0;
 			OperationName = "slt";
-
 			break;
 
 		}
