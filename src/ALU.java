@@ -17,38 +17,38 @@ public class ALU {
 		int Output = 0;
 		String OperationName = "";
 		switch (Op) {
-		case "0000":
+		case "0000": //I-AND
 			Output = Operand1 & Operand2;
 			OperationName = "AND";
 			break;
-		case "0001":
+		case "0001": //R-Type OR
 			Output = Operand1 | Operand2;
 			OperationName = "OR";
 			break;
-		case "0010":
+		case "0010": //R-Add
 			Output = Operand1 + Operand2;
 			OperationName = "add";
 			break;
-		case "0011":
+		case "0011": //R-Sub/Beq/Blt
 			Output = Operand1 - Operand2;
 			OperationName = "sub";
 			break;
-		case "0100":
+		case "0100": //R-MultiplyS
 			Output = Operand1 * Operand2;
 			OperationName = "multiply";
 			break;
-		case "0101":
+		case "0101"://R-shift left
 			Output = Operand1 << Operand2;
 			OperationName = "shift left";
 			break;
-		case "0110":
+		case "0110"://R-Shift Right
 			Output = Operand1 >> Operand2;
 			OperationName = "shift right";
 			break;
-		case "0111":
+		case "0111": // R-Slt
 			Output = (Operand1 < Operand2) ? 1 : 0;
 			OperationName = "slt";
-			break;
+			break;	
 
 		}
 		Z = Output == 0;
