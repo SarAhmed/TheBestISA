@@ -34,6 +34,7 @@ public class Memory {
 	}
 
 	public static int getInstruction() {
+		if(PC==nextInstruction)return -1;
 		while(nonExecute[PC])PC=(PC+1)%memSize;	
 
 		int inst=mem[PC];

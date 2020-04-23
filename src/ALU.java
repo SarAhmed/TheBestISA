@@ -45,7 +45,7 @@ public class ALU {
 			Output = Operand1 >> Operand2;
 			OperationName = "shift right";
 			break;
-		case "0111": // R-Slt
+		case "0111": // I-Slt
 			Output = (Operand1 < Operand2) ? 1 : 0;
 			OperationName = "slt";
 			break;	
