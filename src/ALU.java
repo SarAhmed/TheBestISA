@@ -17,38 +17,42 @@ public class ALU {
 		int Output = 0;
 		String OperationName = "";
 		switch (Op) {
-		case "0000": //I-AND
+		case "0000": // I-AND
 			Output = Operand1 & Operand2;
 			OperationName = "AND";
 			break;
-		case "0001": //R-Type OR
+		case "0001": // R-Type OR
 			Output = Operand1 | Operand2;
 			OperationName = "OR";
 			break;
-		case "0010": //R-Add
+		case "0010": // R-Add
 			Output = Operand1 + Operand2;
 			OperationName = "add";
 			break;
-		case "0011": //R-Sub/Beq/Blt
+		case "0011": // R-Sub/Beq/Blt
 			Output = Operand1 - Operand2;
 			OperationName = "sub";
 			break;
-		case "0100": //R-MultiplyS
+		case "0100": // R-MultiplyS
 			Output = Operand1 * Operand2;
 			OperationName = "multiply";
 			break;
-		case "0101"://R-shift left
-			Output = Operand1 << Operand2;
+		case "0101":// R-shift left
+			Output = Operand1 << (Operand2 % 32);
 			OperationName = "shift left";
 			break;
-		case "0110"://R-Shift Right
-			Output = Operand1 >> Operand2;
+		case "0110":// R-Shift Right
+			Output = Operand1 >> (Operand2 % 32);
 			OperationName = "shift right";
 			break;
 		case "0111": // I-Slt
 			Output = (Operand1 < Operand2) ? 1 : 0;
 			OperationName = "slt";
-			break;	
+			break;
+		case "1000": // I-Sgt
+			Output = (Operand1 >= Operand2) ? 1 : 0;
+			OperationName = "sgt";
+			break;
 
 		}
 		Z = Output == 0;
@@ -79,6 +83,8 @@ public class ALU {
 			return "0110";
 		case "slt":
 			return "0111";
+		case "sgt":
+			return "1000";
 		default:
 			return null;
 
