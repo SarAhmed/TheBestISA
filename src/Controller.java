@@ -1,32 +1,41 @@
 
+import java.util.Arrays;
 import java.util.Scanner;
+
 
 public class Controller {
 	static PipeLineRegister pipeline[];
 	static int cycle;
-
-	public Controller() {
-		pipeline = new PipeLineRegister[5];
-		// loadProgram[];
-//		init();
+	
+public static void main(String[] args) {
+		init();
 		int numInstructions = Memory.readCode() + 4;
+		System.out.println(numInstructions);
 		while (numInstructions-- > 0) {
 			nextCycle();
 			System.out.println("After clock cycle: " + cycle);
 			System.out.println();
-			for (int i = 1; i < 5; i++) {
+			for (int i = 4; i >0; i--) {
 				pipeline[i] = pipeline[i - 1];
-			}
-			if (numInstructions > 4)
+			}			
+		//	System.out.println(Arrays.toString(pipeline)+"**************************");
+
+			if (numInstructions >= 4)
 				fetch();
-			if (numInstructions > 3)
+			if (numInstructions >= 3 )
 				decode();
-			if (numInstructions > 2)
+			if (numInstructions >= 2)
 				execute();
-			if (numInstructions > 1)
+			if (numInstructions >= 1)
 				Mem();
 			WB();
 		}
+	}
+	public Controller() {
+		pipeline = new PipeLineRegister[5];
+		// loadProgram[];
+//		init();
+		
 
 	}
 
@@ -39,10 +48,11 @@ public class Controller {
 			Memory.loadInstruction(Integer.parseInt(sc.nextLine()));
 		}
 	}
-
-	public void init() {
+	
+	public static void init() {
 		Memory mem = new Memory();
 		RegisterFile rf = new RegisterFile();
+		new Controller();
 
 	}
 
@@ -53,17 +63,67 @@ public class Controller {
 
 	public static void execute() {
 		PipeLineRegister pr = Controller.pipeline[2];
+		if(Controller.pipeline[2]==null)return;
+
 		if (pr.AlUop != null) {
-			int res = ALU.ALUEvaluator(pr.AlUop, pr.src1Val, pr.src2Val);
+			int res = 0;
+			if (pr.ALUsrc) {
+				res = ALU.ALUEvaluator(pr.AlUop, pr.src1Val, pr.ImmediateVal);
+			} else {
+				res = ALU.ALUEvaluator(pr.AlUop, pr.src1Val, pr.src2Val);
+
+			}
+
 			pr.ALUresult = res;
 			pr.Zero = ALU.isZero();
 		}
 
-		System.out.println();
+		/*
+		 * 
+		 * zero flag: 1 branch address: 0000 0000 0000 0000 0000 0000 0000 1000 ALU
+		 * result/address: 0000 0000 0000 0000 0000 0000 0000 0000 register value to
+		 * write to memory: 0000 0000 0000 0000 0000 0000 0000 0000 rt/rd register:
+		 * 01001 WB controls: MemToReg: 0, RegWrite: 1 MEM controls: MemRead: 1,
+		 * MemWrite: 0, Branch: 0
+		 */
+		String instToDecode = pr.instruction;
+		String src1 = getSrcOne(instToDecode);
+		String src2 = getSrcTwo(instToDecode);
+		String dest = getDest(instToDecode);
+		String src1Val = InstAsString(RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)]);
+		String src2Val = InstAsString(RegisterFile.registers[Integer.parseInt(getSrcTwo(instToDecode), 2)]);
+		String shamt = getShamt(instToDecode);
+		String ImmVal = SingExtender(getImm(instToDecode));
+		String jumpVal = InstAsString(RegisterFile.registers[Integer.parseInt(getJAddress(instToDecode), 2)]);
+		System.out.println("execute stage");
+		System.out.println("Instruction "+pr.instruction);
+		
+		System.out.println("Zero flag: " + pr.Zero);
+		System.out.println("ALU result/addres: " + pr.ALUresult);
+		System.out.println("register value to write to memory: " + InstAsString(pr.toMemoryVal));
+		System.out.println("Read data 1: " + src1Val);
+		System.out.println("Read data 2: " + src2Val);
+		System.out.println("Immediate Value (Sign-Extended): " + ImmVal);
+		System.out.println("Next PC: " + InstAsString(Memory.PC));
+		System.out.println("Src1: " + src1);
+		System.out.println("Src2: " + src2);
+		System.out.println("Dest: " + dest);
+		System.out.println("Shift amount: " + shamt);
+		System.out.println("Jump Value: " + jumpVal);
+
+		System.out.println("Control signals -->");
+		System.out.printf("WB control: memToReg-> %d, RegWrite-> %d\n", (pr.memToReg ? 1 : 0), (pr.RegWrite ? 1 : 0));
+		System.out.printf("Memory control: memRead-> %d, memWrite-> %d, branch-> %d, jump-> %d\n", (pr.memRead ? 1 : 0),
+				(pr.memWrite ? 1 : 0), (pr.branch ? 1 : 0), (pr.jump ? 1 : 0));
+//		System.out.printf("EX control: ALUsrc-> %d, ALUop-> %s, regDest-> %d, shamt->%d\n", (pr.ALUsrc ? 1 : 0),
+//				pr.AlUop, (pr.regDest ? 1 : 0), (pr.shamt ? 1 : 0));
+		System.out.println("--------------------------------------");
 	}
 
 	public static void Mem() {
 		PipeLineRegister pr = Controller.pipeline[3];
+		if(Controller.pipeline[3]==null)return;
+
 		int address = pr.ALUresult;
 		if (pr.memRead) {
 			pr.WBvalue = Memory.readData(Integer.toBinaryString(address));
@@ -73,11 +133,44 @@ public class Controller {
 			Memory.writeData(Integer.toBinaryString(address), data);
 
 		}
+		String instToDecode = pr.instruction;
+		String src1 = getSrcOne(instToDecode);
+		String src2 = getSrcTwo(instToDecode);
+		String dest = getDest(instToDecode);
+		String src1Val = InstAsString(RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)]);
+		String src2Val = InstAsString(RegisterFile.registers[Integer.parseInt(getSrcTwo(instToDecode), 2)]);
+		String shamt = getShamt(instToDecode);
+		String ImmVal = SingExtender(getImm(instToDecode));
+		String jumpVal = InstAsString(RegisterFile.registers[Integer.parseInt(getJAddress(instToDecode), 2)]);
 
+		System.out.println("Mem stage");
+
+//		System.out.println("Zero flag: "+pr.Zero);
+		System.out.println("ALU result/addres: " + pr.ALUresult);
+		System.out.println("register value to write to memory: " + InstAsString(pr.toMemoryVal));
+//		System.out.println("Read data 1: " + src1Val);
+//		System.out.println("Read data 2: " + src2Val);
+//		System.out.println("Immediate Value (Sign-Extended): " + ImmVal);
+//		System.out.println("Next PC: " + InstAsString(Memory.PC));
+//		System.out.println("Src1: " + src1);
+//		System.out.println("Src2: " + src2);
+//		System.out.println("Dest: " + dest);
+//		System.out.println("Shift amount: " + shamt);
+//		System.out.println("Jump Value: " + jumpVal);
+		System.out.println("memory word read: " + (pr.memRead ? pr.WBvalue : "do not care"));
+
+		System.out.println("Control signals -->");
+		System.out.printf("WB control: memToReg-> %d, RegWrite-> %d\n", (pr.memToReg ? 1 : 0), (pr.RegWrite ? 1 : 0));
+//		System.out.printf("Memory control: memRead-> %d, memWrite-> %d, branch-> %d, jump-> %d\n", (pr.memRead ? 1 : 0),
+//				(pr.memWrite ? 1 : 0), (pr.branch ? 1 : 0), (pr.jump ? 1 : 0));
+
+		System.out.println("------------------------");
 	}
 
 	public static void WB() {
 		PipeLineRegister pr = Controller.pipeline[4];
+		if(Controller.pipeline[4]==null)return;
+
 		if (pr.RegWrite && pr.memToReg) { // lw
 			int val = pr.WBvalue;
 			RegisterFile.registers[pr.WBaddress] = val;
@@ -90,6 +183,10 @@ public class Controller {
 		} else if (pr.branch && pr.Zero) {
 			Memory.setPC(pr.ImmediateVal + pr.PCval); // to do we can make the addition in a separate component
 		}
+		System.out.println("WB stage");
+		System.out.println("Instruction "+pr.instruction);
+		System.out.println("----------------------------------");
+
 
 	}
 
@@ -101,6 +198,9 @@ public class Controller {
 		Controller.pipeline[0] = pr;
 //		Controller.pipeline[0].intermediateOut = Memory.getInstruction(); // Load Instruction to First Pipeline Stage.
 		int inst = Memory.getInstruction();
+		if(inst==-1) {
+			Controller.pipeline[0]=null;return;
+		}
 		pr.PCval = Memory.PC;
 		String instToDecode = InstAsString(inst);
 		pr.instruction = instToDecode;
@@ -276,7 +376,6 @@ public class Controller {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = false;
 			pr.RegWrite = false;
 			pr.shamt = false;
 			break;
@@ -285,7 +384,7 @@ public class Controller {
 		}
 		System.out.println("Fetch stage");
 		System.out.println("Instruction: " + instToDecode);
-		System.out.println(InstAsString(Memory.PC));
+		System.out.println("PC: "+InstAsString(Memory.PC));
 		System.out.println("---------------------------");
 
 	}
@@ -300,6 +399,7 @@ public class Controller {
 
 	public static void decode() {
 //		int inst = (int) Controller.pipeline[0].intermediateOut;
+		if(Controller.pipeline[1]==null)return;
 		String instToDecode = Controller.pipeline[1].instruction;
 		PipeLineRegister pr = Controller.pipeline[1];
 		switch (getType(instToDecode)) {
@@ -334,6 +434,7 @@ public class Controller {
 		String jumpVal = InstAsString(RegisterFile.registers[Integer.parseInt(getJAddress(instToDecode), 2)]);
 
 		System.out.println("Decode stage");
+		System.out.println("Instruction "+pr.instruction);
 		System.out.println("Read data 1: " + src1Val);
 		System.out.println("Read data 2: " + src2Val);
 		System.out.println("Immediate Value (Sign-Extended): " + ImmVal);
@@ -418,10 +519,12 @@ public class Controller {
 
 	}
 
+//sw %t1,%t2,12
 	private static void handleI(String instToDecode) {
 		PipeLineRegister pr = Controller.pipeline[1];
-		pr.src1Val = RegisterFile.registers[Integer.parseInt(getSrcOneImm(instToDecode), 2)];
+		pr.src1Val = RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)];
 		pr.ImmediateVal = Integer.parseInt(SingExtender(getImm(instToDecode)), 2);
+		pr.toMemoryVal = RegisterFile.registers[Integer.parseInt(getDest(instToDecode), 2)];
 
 //		switch (getOpcode(instToDecode)) {
 //		case "0010"://add Imm
@@ -471,10 +574,10 @@ public class Controller {
 		}
 		return s;
 	}
-
-	public static String getSrcOneImm(String s) {
-		return s.substring(12, 17);
-	}
+// I-type : 2 bits types 5 bits destination 5bits src1 5 bits Imm
+//	public static String getSrcOneImm(String s) {
+//		return s.substring(7, 12);
+//	}
 
 	public static String getImm(String s) {
 		return s.substring(12, 28);
@@ -535,7 +638,7 @@ class PipeLineRegister {
 	String AlUop;
 	String instruction;
 	int PCval;
-
+	int toMemoryVal;
 	int src1Val, src2Val, ImmediateVal;
 	int WBaddress, WBvalue;
 	int jumVal;
@@ -548,5 +651,5 @@ class PipeLineRegister {
 
 /*
  * R type dest, src1,src2,operation EX : val src1, val src2, operation M: null
- * WB: dest
+ * WB: dest lw dst src imm sw src1 src2 imm
  */

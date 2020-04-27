@@ -56,8 +56,8 @@ public class ALU {
 
 		}
 		Z = Output == 0;
-		System.out.printf("Operation Name: %s\r\n" + "1st Operand : %d\r\n" + "2nd Operand : %d\r\n" + "Output : %d\r\n"
-				+ "Z-Flag Value : %d\r\n" + "\r\n", OperationName, Operand1, Operand2, Output, Z ? 1 : 0);
+//		System.out.printf("Operation Name: %s\r\n" + "1st Operand : %d\r\n" + "2nd Operand : %d\r\n" + "Output : %d\r\n"
+//				+ "Z-Flag Value : %d\r\n" + "\r\n", OperationName, Operand1, Operand2, Output, Z ? 1 : 0);
 		return Output;
 	}
 

@@ -23,7 +23,7 @@ public class Memory {
 		try {
 			Scanner scan = new Scanner(file);
 			while (scan.hasNextLine()) {
-				Data = scan.nextLine();
+				Data = scan.nextLine().trim();
 				Memory.loadInstruction(Integer.parseInt(Data, 2));
 				count++;
 			}
