@@ -11,11 +11,13 @@ public class Memory {
 	static int PC;
 	static int nextInstruction;
 
-	// the first 512 * 32 bits are reserved for Instructions only and the remaining
-	// are for data
+	public static boolean hasMoreInstruction() {
+		return PC<nextInstruction;
+	}
 
 	// TO DO ask if it's possible to get SW in an address where there are
 	// instruction
+
 	public static int readFile(String name) {
 		String Data = "";
 		int count = 0;
@@ -24,7 +26,7 @@ public class Memory {
 			Scanner scan = new Scanner(file);
 			while (scan.hasNextLine()) {
 				Data = scan.nextLine().trim();
-				Memory.loadInstruction(Integer.parseInt(Data, 2));
+				Memory.loadInstruction(Integer.parseUnsignedInt(Data, 2));
 				count++;
 			}
 			scan.close();
@@ -52,10 +54,10 @@ public class Memory {
 
 	}
 
-	// add method to load Instruction when you know it's input format
+	
 
 	public static void loadInstruction(int instruction) {
-		mem[(nextInstruction++) % 512] = instruction; // to be checked (partially load)
+		mem[(nextInstruction++) ] = instruction; 
 	}
 
 	public static int getInstruction() {

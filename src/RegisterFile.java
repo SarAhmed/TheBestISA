@@ -51,7 +51,4 @@ public class RegisterFile {
 		registers = new int[32];
 	}
 
-	// Convert int Instruction to String for ease of manipulation.
-
-	// Determine the Type of instruction to deal with.
 }
