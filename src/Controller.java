@@ -417,7 +417,9 @@ public static boolean isNull() {
 		System.out.println("Instruction: "+pr.instruction);
 		System.out.println("ALU result/addres: " + InstAsString(pr.ALUresult));
 		System.out.println("Register value to write to memory: " + InstAsString(pr.toMemoryVal));
-		System.out.println("Memory word read: " + (pr.memRead ? pr.WBvalue : "do not care"));
+		
+		System.out.println("Memory word read: " + (pr.memRead ? InstAsString(pr.WBvalue) : "do not care"));
+		System.out.println("Memory word write: " + (pr.memRead ? InstAsString(pr.src1Val) : "do not care"));
 
 		System.out.println("Control signals -->");
 		System.out.printf("WB control: memToReg-> %d, RegWrite-> %d\n", (pr.memToReg ? 1 : 0), (pr.RegWrite ? 1 : 0));
