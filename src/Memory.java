@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Memory {
 	static final int cacheSize = 512;// no. in words;
-	static final int memSize = 1024;// no in words;
+	static final int memSize = 2048;// no in words;
 	static int[] cache, mem, tag;
 	static boolean[] valid;
 	static boolean[] nonExecute;
@@ -69,8 +69,8 @@ public class Memory {
 	public static void writeData(String address, int data) {
 		int ad = Integer.parseInt(address, 2);
 		ad %= memSize;
-		int idx = ad % 512;
-		int t = ad / 512;
+		int idx = ad % cacheSize;
+		int t = ad / cacheSize;
 		valid[idx] = true;
 		tag[idx] = t;
 		cache[idx] = mem[ad] = data;
@@ -82,8 +82,8 @@ public class Memory {
 	public static int readData(String address) {
 		int ad = Integer.parseInt(address, 2);
 		ad %= memSize;
-		int idx = ad % 512;
-		int t = ad / 512;
+		int idx = ad % cacheSize;
+		int t = ad / cacheSize;
 		if (!valid[idx] || t != tag[idx]) {
 			valid[idx] = true;
 			tag[idx] = t;
