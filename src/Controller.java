@@ -1,4 +1,3 @@
-
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -6,11 +5,18 @@ import java.util.Scanner;
 public class Controller {
 	static PipeLineRegister pipeline[];
 	static int cycle;
-
+	public Controller() {
+		pipeline = new PipeLineRegister[5];
+	}
+	//Main method to simulate the program & control excution.
+	//An Empty Cycle is printed out After execution is done.
+	//We call this the Cleaning Cycle.It checks that the pipeline is empty & there are not other instructions.
+	//The Cleaning Cycle has no effect at all in fact it is a mere check that everything went as expected.
+	
 	public static void main(String[] args) {
 		init();
 		Memory.readCode();
-		while (Memory.hasMoreInstruction()) {
+		while (Memory.hasMoreInstruction() || !isNull()) { //BUG HERE
 			nextCycle();
 			System.out.println("After clock cycle: " + cycle);
 			System.out.println();
@@ -24,32 +30,306 @@ public class Controller {
 			WB();
 		}
 	}
-	public Controller() {
-		pipeline = new PipeLineRegister[5];
+//Check if there anything in the pipeline before halting exction
+public static boolean isNull() {
+	for(int i =0;i<pipeline.length;i++) {
+		if(pipeline[i]!=null)
+			return false;
 	}
-
-	public void loadInstructions() {
-		System.out.print("Enter number of instructions :");
-		Scanner sc = new Scanner(System.in);
-		int n = sc.nextInt();
-		System.out.println();
-		while (n-- > 0) {
-			Memory.loadInstruction(Integer.parseInt(sc.nextLine()));
-		}
-	}
-
+	return true;
+}
+//A function to initialize the components.
 	public static void init() {
 		new Memory();
 		new RegisterFile();
 		new Controller();
 
 	}
-
+	//Increment the variable cycle to simulate next cycle.
 	public static void nextCycle() {
 		cycle++;
+	}
+	/*Fetch method that fetches instruction and set control signals.
+	 *Load the instruction from memory to the nextInstruction Variable of nextInstruction. (Checked).
+	*/
+	public static void fetch() {
+		PipeLineRegister pr = new PipeLineRegister();
+		Controller.pipeline[0] = pr;
+		int inst = Memory.getInstruction();
+		if(inst==-1) {
+			Controller.pipeline[0]=null;return;
+		}
+		pr.PCval = Memory.PC;
+		String instToDecode = InstAsString(inst);
+		pr.instruction = instToDecode;
+		switch (getOpcode(instToDecode)) {
+		case "0000"://Sub R-Type (Checked)
+			pr.AlUop = ALU.encodingOF("sub");
+			pr.ALUsrc = false;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = true;
+			pr.RegWrite = true;
+			pr.shamt = false;
+
+			break;
+		case "0001":// Add R-Type (Checked)
+			pr.AlUop = ALU.encodingOF("add");
+			pr.ALUsrc = false;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = true;
+			pr.RegWrite = true;
+			pr.shamt = false;
+
+			break;
+		case "0010":// Add-Imm (Checked)
+			pr.AlUop = ALU.encodingOF("add");
+			pr.ALUsrc = true;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = false;
+			pr.RegWrite = true;
+			pr.shamt = false;
+
+			break;
+		case "0011":// Mul R-Type(Checked)
+			pr.AlUop = ALU.encodingOF("mul");
+			pr.ALUsrc = false;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = true;
+			pr.RegWrite = true;
+			pr.shamt = false;
+
+			break;
+		case "0100":// OR R-Type(Checked)
+			pr.AlUop = ALU.encodingOF("or");
+			pr.ALUsrc = false;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = true;
+			pr.RegWrite = true;
+			pr.shamt = false;
+
+			break;
+		case "0101":// AND-Imm(Checked)
+			pr.AlUop = ALU.encodingOF("and");
+			pr.ALUsrc = true;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = false;
+			pr.RegWrite = true;
+			pr.shamt = false;
+
+			break;
+		case "0110":// Shift-R(Checked)
+			pr.AlUop = ALU.encodingOF("shiftr");
+			pr.ALUsrc = false;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = true;
+			pr.RegWrite = true;
+			pr.shamt = true;
+			break;
+		case "0111":// Shift-L(Checked)
+			pr.AlUop = ALU.encodingOF("shiftl");
+			pr.ALUsrc = false;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = true;
+			pr.RegWrite = true;
+			pr.shamt = true;
+			break;
+		case "1000":// LW (Checked).
+			pr.AlUop = ALU.encodingOF("add");
+			pr.ALUsrc = true;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = true;
+			pr.memToReg = true;
+			pr.memWrite = false;
+			pr.regDest = false;
+			pr.RegWrite = true;
+			pr.shamt = false;
+			break;
+		case "1001":// SW (Checked).
+			pr.AlUop = ALU.encodingOF("add");
+			pr.ALUsrc = true;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = true;
+			pr.regDest = false;
+			pr.RegWrite = false;
+			pr.shamt = false;
+			break;
+		case "1010":// BEQ(Checked)
+			pr.AlUop = ALU.encodingOF("sub");
+			pr.ALUsrc = false;
+			pr.branch = true;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = false;
+			pr.RegWrite = false;
+			pr.shamt = false;
+			break;
+		case "1011":// BLT(Checked)
+
+			pr.AlUop = ALU.encodingOF("sgt");
+			pr.ALUsrc = false;
+			pr.branch = true;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = false;
+			pr.RegWrite = false;
+			pr.shamt = false;
+			break;
+		case "1100":// SLT-Imm(Checked).
+			pr.AlUop = ALU.encodingOF("slt");
+			pr.ALUsrc = true;
+			pr.branch = false;
+			pr.jump = false;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.regDest = false;
+			pr.RegWrite = true;
+			pr.shamt = false;
+			break;
+		case "1101":// Jump
+			pr.AlUop = ALU.encodingOF("doNotCare");
+			pr.ALUsrc = false;
+			pr.branch = false;
+			pr.jump = true;
+			pr.memRead = false;
+			pr.memToReg = false;
+			pr.memWrite = false;
+			pr.RegWrite = false;
+			pr.shamt = false;
+			break;
+		default:
+			System.out.println("Wrong Type Code Please revise your input data");
+		}
+		System.out.println("Fetch stage");
+		System.out.println("Instruction: " + instToDecode);
+		System.out.println("next PC: "+InstAsString(pr.PCval));
+		System.out.println("---------------------------");
+	}
+	//Method Handling the decode Stage.
+	public static void decode() {
+		if(Controller.pipeline[1]==null)return;
+		String instToDecode = Controller.pipeline[1].instruction;
+		PipeLineRegister pr = Controller.pipeline[1];
+		switch (getType(instToDecode)) {
+		case "00":
+			handleR(instToDecode);
+			break;
+		case "01":
+			handleI(instToDecode);
+			break;
+		case "10":
+			handleJ(instToDecode);
+			break;
+		default:
+			System.out.println("Wrong Type Code Please revise your input data");
+
+		}
+		String src1 = getSrcOne(instToDecode);
+		String src2 = getSrcTwo(instToDecode);
+		String dest = getDest(instToDecode);
+		String src1Val = InstAsString(RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)]);
+		String src2Val = InstAsString(RegisterFile.registers[Integer.parseInt(getSrcTwo(instToDecode), 2)]);
+		String shamt = getShamt(instToDecode);
+		String ImmVal = SingExtender(getImm(instToDecode));
+		String jumpVal = InstAsString(RegisterFile.registers[Integer.parseInt(getJAddress(instToDecode), 2)]);
+		System.out.println("Decode stage");
+		System.out.println("Instruction: "+pr.instruction);
+		System.out.println("Read data 1: " + src1Val);
+		System.out.println("Read data 2: " + src2Val);
+		System.out.println("Immediate Value (Sign-Extended): " + ImmVal);
+		System.out.println("Next PC: " + InstAsString(pr.PCval));
+		System.out.println("Src1: " + src1);
+		System.out.println("Src2: " + src2);
+		System.out.println("Dest: " + dest);
+		System.out.println("Shift amount: " + shamt);
+		System.out.println("Jump Value: " + jumpVal);
+		System.out.println("Control signals -->");
+		System.out.printf("WB control: memToReg-> %d, RegWrite-> %d\n", (pr.memToReg ? 1 : 0), (pr.RegWrite ? 1 : 0));
+		System.out.printf("Memory control: memRead-> %d, memWrite-> %d, branch-> %d, jump-> %d\n", (pr.memRead ? 1 : 0),
+				(pr.memWrite ? 1 : 0), (pr.branch ? 1 : 0), (pr.jump ? 1 : 0));
+		System.out.printf("EX control: ALUsrc-> %d, ALUop-> %s, regDest-> %d, shamt->%d\n", (pr.ALUsrc ? 1 : 0),
+				pr.AlUop, (pr.regDest ? 1 : 0), (pr.shamt ? 1 : 0));
+		System.out.println("---------------------------");
+
+	}
+	// Handles J Instructions (Checked).
+	private static void handleJ(String instToDecode) {
+		PipeLineRegister pr = Controller.pipeline[1];
+		if (getOpcode(instToDecode).equals("1101")) {
+			int jumpVal = RegisterFile.registers[Integer.parseInt(getJAddress(instToDecode), 2)];
+			pr.jumVal = jumpVal;
+
+		} else {
+			System.out.println("This is not a well formatted J Type Instruction");
+		}
+	}
+	//Handles the decoding of R-Type Instructions (Checked).
+	private static void handleR(String instToDecode) {
+		int src1Val = RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)];
+		int src2Val = RegisterFile.registers[Integer.parseInt(getSrcTwo(instToDecode), 2)];
+		int shamt = Integer.parseInt(getShamt(instToDecode), 2);
+		PipeLineRegister pr = Controller.pipeline[1];
+		pr.WBaddress = Integer.parseInt(getDest(instToDecode), 2);
+		pr.src1Val = src1Val;
+
+		if (pr.shamt) {
+			pr.src2Val = shamt;
+		} else {
+			pr.src2Val = src2Val;
+		}
 
 	}
 
+	//Handles the decode of I-Type Instructions(Checked and added WB address).
+	private static void handleI(String instToDecode) {
+		PipeLineRegister pr = Controller.pipeline[1];
+		pr.src1Val = RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)];
+		pr.WBaddress = Integer.parseInt(getDest(instToDecode), 2);
+		pr.ImmediateVal = Integer.parseUnsignedInt(SingExtender(getImm(instToDecode)), 2);
+		pr.toMemoryVal = RegisterFile.registers[Integer.parseInt(getDest(instToDecode), 2)];
+	}
+
+	//Method Handling the Excution (Checked).
 	public static void execute() {
 		PipeLineRegister pr = Controller.pipeline[2];
 		if(Controller.pipeline[2]==null)return;
@@ -84,10 +364,13 @@ public class Controller {
 		String shamt = getShamt(instToDecode);
 		String ImmVal = SingExtender(getImm(instToDecode));
 		String jumpVal = InstAsString(RegisterFile.registers[Integer.parseInt(getJAddress(instToDecode), 2)]);
+		//Added branch address display here since it is in the required document.
+		String branchAdress = InstAsString(pr.ImmediateVal + pr.PCval);
 		System.out.println("execute stage");
-		System.out.println("Instruction "+pr.instruction);
+		System.out.println("Instruction: "+pr.instruction);
 
 		System.out.println("Zero flag: " + (pr.Zero? 1 : 0));
+		System.out.println("Branch Address: "+branchAdress);
 		System.out.println("ALU result/addres: " + InstAsString(pr.ALUresult));
 		System.out.println("register value to write to memory: " + InstAsString(pr.toMemoryVal));
 		System.out.println("Read data 1: " + src1Val);
@@ -104,11 +387,9 @@ public class Controller {
 		System.out.printf("WB control: memToReg-> %d, RegWrite-> %d\n", (pr.memToReg ? 1 : 0), (pr.RegWrite ? 1 : 0));
 		System.out.printf("Memory control: memRead-> %d, memWrite-> %d, branch-> %d, jump-> %d\n", (pr.memRead ? 1 : 0),
 				(pr.memWrite ? 1 : 0), (pr.branch ? 1 : 0), (pr.jump ? 1 : 0));
-		//		System.out.printf("EX control: ALUsrc-> %d, ALUop-> %s, regDest-> %d, shamt->%d\n", (pr.ALUsrc ? 1 : 0),
-		//				pr.AlUop, (pr.regDest ? 1 : 0), (pr.shamt ? 1 : 0));
 		System.out.println("--------------------------------------");
 	}
-
+	//Method handling reading and writing to memory (Checked).
 	public static void Mem() {
 		PipeLineRegister pr = Controller.pipeline[3];
 		if(Controller.pipeline[3]==null)return;
@@ -133,17 +414,17 @@ public class Controller {
 		String jumpVal = InstAsString(RegisterFile.registers[Integer.parseInt(getJAddress(instToDecode), 2)]);
 
 		System.out.println("Mem stage");
-
+		System.out.println("Instruction: "+pr.instruction);
 		System.out.println("ALU result/addres: " + InstAsString(pr.ALUresult));
-		System.out.println("register value to write to memory: " + InstAsString(pr.toMemoryVal));
-		System.out.println("memory word read: " + (pr.memRead ? pr.WBvalue : "do not care"));
+		System.out.println("Register value to write to memory: " + InstAsString(pr.toMemoryVal));
+		System.out.println("Memory word read: " + (pr.memRead ? pr.WBvalue : "do not care"));
 
 		System.out.println("Control signals -->");
 		System.out.printf("WB control: memToReg-> %d, RegWrite-> %d\n", (pr.memToReg ? 1 : 0), (pr.RegWrite ? 1 : 0));
 
 		System.out.println("------------------------");
 	}
-
+	//Method handling the WriteBack (Checked).
 	public static void WB() {
 		PipeLineRegister pr = Controller.pipeline[4];
 		if(Controller.pipeline[4]==null)return;
@@ -151,14 +432,14 @@ public class Controller {
 		if (pr.RegWrite && pr.memToReg) { // lw
 			int val = pr.WBvalue;
 			RegisterFile.registers[pr.WBaddress] = val;
-		} else if (pr.RegWrite && !pr.memToReg) { // R-type ot I-type instruction
+		} else if (pr.RegWrite && !pr.memToReg) { // R-type or I-type instruction
 			int val = pr.ALUresult;
 			RegisterFile.registers[pr.WBaddress] = val;
 		} else if (pr.jump) {
 			Memory.setPC(pr.jumVal);
 
 		} else if (pr.branch && pr.Zero) {
-			Memory.setPC(pr.ImmediateVal + pr.PCval); // to do we can make the addition in a separate component
+			Memory.setPC(pr.ImmediateVal + pr.PCval);//Immitating the Addition Module.
 		}
 		System.out.println("WB stage");
 		System.out.println("Instruction "+pr.instruction);
@@ -167,205 +448,8 @@ public class Controller {
 
 	}
 
-	public static void fetch() {
-		// Load the instruction from memory to the nextInstruction Variable of
-
-		// controller.
-		PipeLineRegister pr = new PipeLineRegister();
-		Controller.pipeline[0] = pr;
-		//		Controller.pipeline[0].intermediateOut = Memory.getInstruction(); // Load Instruction to First Pipeline Stage.
-		int inst = Memory.getInstruction();
-		if(inst==-1) {
-			Controller.pipeline[0]=null;return;
-		}
-		pr.PCval = Memory.PC;
-		String instToDecode = InstAsString(inst);
-		pr.instruction = instToDecode;
-		switch (getOpcode(instToDecode)) {
-		case "0000":// sub
-			pr.AlUop = ALU.encodingOF("sub");
-			pr.ALUsrc = false;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = true;
-			pr.RegWrite = true;
-			pr.shamt = false;
-
-			break;
-		case "0001":// add
-			pr.AlUop = ALU.encodingOF("add");
-			pr.ALUsrc = false;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = true;
-			pr.RegWrite = true;
-			pr.shamt = false;
-
-			break;
-		case "0010":// add Imm
-			pr.AlUop = ALU.encodingOF("add");
-			pr.ALUsrc = true;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = false;
-			pr.RegWrite = true;
-			pr.shamt = false;
-
-			break;
-		case "0011":// mul
-			pr.AlUop = ALU.encodingOF("mul");
-			pr.ALUsrc = false;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = true;
-			pr.RegWrite = true;
-			pr.shamt = false;
-
-			break;
-		case "0100":// or
-			pr.AlUop = ALU.encodingOF("or");
-			pr.ALUsrc = false;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = true;
-			pr.RegWrite = true;
-			pr.shamt = false;
-
-			break;
-		case "0101":// and Imm
-			pr.AlUop = ALU.encodingOF("and");
-			pr.ALUsrc = true;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = false;
-			pr.RegWrite = true;
-			pr.shamt = false;
-
-			break;
-		case "0110":// shift r
-			pr.AlUop = ALU.encodingOF("shiftr");
-			pr.ALUsrc = false;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = true;
-			pr.RegWrite = true;
-			pr.shamt = true;
-			break;
-		case "0111":// shift l
-			pr.AlUop = ALU.encodingOF("shiftl");
-			pr.ALUsrc = false;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = true;
-			pr.RegWrite = true;
-			pr.shamt = true;
-			break;
-		case "1000":// lw
-			pr.AlUop = ALU.encodingOF("add");
-			pr.ALUsrc = true;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = true;
-			pr.memToReg = true;
-			pr.memWrite = false;
-			pr.regDest = false;
-			pr.RegWrite = true;
-			pr.shamt = false;
-			break;
-		case "1001":// sw
-			pr.AlUop = ALU.encodingOF("add");
-			pr.ALUsrc = true;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = true;
-			pr.regDest = false;
-			pr.RegWrite = false;
-			pr.shamt = false;
-			break;
-		case "1010":// beq
-			pr.AlUop = ALU.encodingOF("sub");
-			pr.ALUsrc = false;
-			pr.branch = true;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = false;
-			pr.RegWrite = false;
-			pr.shamt = false;
-			break;
-		case "1011":// branch less than
-
-			pr.AlUop = ALU.encodingOF("sgt");
-			pr.ALUsrc = false;
-			pr.branch = true;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = false;
-			pr.RegWrite = false;
-			pr.shamt = false;
-			break;
-		case "1100":// slt Imm
-			pr.AlUop = ALU.encodingOF("slt");
-			pr.ALUsrc = true;
-			pr.branch = false;
-			pr.jump = false;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.regDest = false;
-			pr.RegWrite = true;
-			pr.shamt = false;
-			break;
-		case "1101":// jump
-			pr.AlUop = ALU.encodingOF("doNotCare");
-			pr.ALUsrc = false;
-			pr.branch = false;
-			pr.jump = true;
-			pr.memRead = false;
-			pr.memToReg = false;
-			pr.memWrite = false;
-			pr.RegWrite = false;
-			pr.shamt = false;
-			break;
-		default:
-			System.out.println("Wrong Type Code Please revise your input data");
-		}
-		System.out.println("Fetch stage");
-		System.out.println("Instruction: " + instToDecode);
-		System.out.println("next PC: "+InstAsString(pr.PCval));
-		System.out.println("---------------------------");
-
-	}
-
+	
+	//Extend with "0" any int to 32 bits.
 	public static String InstAsString(int inst) {
 		String instToString = Integer.toBinaryString(inst);
 		while (instToString.length() < 32) {
@@ -374,172 +458,9 @@ public class Controller {
 		return instToString;
 	}
 
-	public static void decode() {
-		//		int inst = (int) Controller.pipeline[0].intermediateOut;
-		if(Controller.pipeline[1]==null)return;
-		String instToDecode = Controller.pipeline[1].instruction;
-		PipeLineRegister pr = Controller.pipeline[1];
-		switch (getType(instToDecode)) {
-		case "00":
-			handleR(instToDecode);
-			break;
-		case "01":
-			handleI(instToDecode);
-			break;
-		case "10":
-			handleJ(instToDecode);
-			break;
-		default:
-			System.out.println("Wrong Type Code Please revise your input data");
 
-		}
-		/*
-		 * Addi $t0, $0,5 in Decode stage: read data 1: 0000 0000 0000 0000 0000 0000
-		 * 0000 0000 read data 2: 0000 0000 0000 0000 0000 0000 0000 0000 sign-extend:
-		 * 0000 0000 0000 0000 0000 0000 0000 0101 Next PC: 0000 0000 0000 0000 0000
-		 * 0000 0000 0100 rt: 01001 rd: don’t care WB controls: MemToReg: 1, RegWrite: 1
-		 * MEM controls: MemRead: 0, MemWrite: 0, Branch: 0 EX controls: RegDest: 0,
-		 * ALUOp: 010, ALUSrc: 1
-		 */
-		String src1 = getSrcOne(instToDecode);
-		String src2 = getSrcTwo(instToDecode);
-		String dest = getDest(instToDecode);
-		String src1Val = InstAsString(RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)]);
-		String src2Val = InstAsString(RegisterFile.registers[Integer.parseInt(getSrcTwo(instToDecode), 2)]);
-		String shamt = getShamt(instToDecode);
-		String ImmVal = SingExtender(getImm(instToDecode));
-		String jumpVal = InstAsString(RegisterFile.registers[Integer.parseInt(getJAddress(instToDecode), 2)]);
 
-		System.out.println("Decode stage");
-		System.out.println("Instruction "+pr.instruction);
-		System.out.println("Read data 1: " + src1Val);
-		System.out.println("Read data 2: " + src2Val);
-		System.out.println("Immediate Value (Sign-Extended): " + ImmVal);
-		System.out.println("Next PC: " + InstAsString(pr.PCval));
-		System.out.println("Src1: " + src1);
-		System.out.println("Src2: " + src2);
-		System.out.println("Dest: " + dest);
-		System.out.println("Shift amount: " + shamt);
-		System.out.println("Jump Value: " + jumpVal);
-
-		System.out.println("Control signals -->");
-		System.out.printf("WB control: memToReg-> %d, RegWrite-> %d\n", (pr.memToReg ? 1 : 0), (pr.RegWrite ? 1 : 0));
-		System.out.printf("Memory control: memRead-> %d, memWrite-> %d, branch-> %d, jump-> %d\n", (pr.memRead ? 1 : 0),
-				(pr.memWrite ? 1 : 0), (pr.branch ? 1 : 0), (pr.jump ? 1 : 0));
-		System.out.printf("EX control: ALUsrc-> %d, ALUop-> %s, regDest-> %d, shamt->%d\n", (pr.ALUsrc ? 1 : 0),
-				pr.AlUop, (pr.regDest ? 1 : 0), (pr.shamt ? 1 : 0));
-
-		//		System.out.println("ALUsrc: " + (pr.ALUsrc ? 1 : 0));
-		//		System.out.println("branch: " + (pr.branch ? 1 : 0));
-		//		System.out.println("memRead: " + (pr.memRead ? 1 : 0));
-		//		System.out.println("memToReg: " + (pr.memToReg ? 1 : 0));
-		//		System.out.println("memWrite: " + (pr.memWrite ? 1 : 0));
-		//		System.out.println("RegWrite: " + (pr.RegWrite ? 1 : 0));
-		//		System.out.println("shamt: " + (pr.shamt ? 1 : 0));
-		//		System.out.println("regDest: " + (pr.regDest ? 1 : 0));
-		System.out.println("---------------------------");
-
-	}
-
-	// Handles J Instructions. 
-	private static void handleJ(String instToDecode) {
-		PipeLineRegister pr = Controller.pipeline[1];
-		if (getOpcode(instToDecode).equals("1101")) {// .equals();;
-			int jumpVal = RegisterFile.registers[Integer.parseInt(getJAddress(instToDecode), 2)];
-			//			Memory.setPC(jumpVal);
-			pr.jumVal = jumpVal;
-
-		} else {
-			System.out.println("This is not a well formatted J Type Instruction");
-		}
-	}
-
-	// Need to Send more info for ALU to be able to do what it wants.
-	private static void handleR(String instToDecode) {
-
-		int src1Val = RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)];
-		int src2Val = RegisterFile.registers[Integer.parseInt(getSrcTwo(instToDecode), 2)];
-		int shamt = Integer.parseInt(getShamt(instToDecode), 2);
-		PipeLineRegister pr = Controller.pipeline[1];
-		//		switch (getOpcode(instToDecode)) {
-		//
-		//		case "0000":// sub
-		//			
-		//		case "0001":// add
-		//			
-		//		case "0011":// mul
-		//			
-		//		case "0100":// or
-		//			pr.src1Val = src1Val;
-		//			pr.src2Val = src2Val;
-		//			pr.WBaddress = Integer.parseInt(getDest(instToDecode), 2);
-		//			break;
-		//		case "0110":// shiftr
-		//			
-		//		case "0111":// shiftl
-		//			pr.src1Val = src1Val;
-		//			pr.src2Val = shamt;
-		//			pr.WBaddress = Integer.parseInt(getDest(instToDecode), 2);
-		//			break;
-		//		default:
-		//			System.out.println("This is not a correct R-Format Instruction");
-		//
-		//		}
-		pr.WBaddress = Integer.parseInt(getDest(instToDecode), 2);
-		pr.src1Val = src1Val;
-
-		if (pr.shamt) {
-			pr.src2Val = shamt;
-		} else {
-			pr.src2Val = src2Val;
-		}
-
-	}
-
-	//sw %t1,%t2,12
-	private static void handleI(String instToDecode) {
-		PipeLineRegister pr = Controller.pipeline[1];
-		pr.src1Val = RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)];
-		pr.ImmediateVal = Integer.parseUnsignedInt(SingExtender(getImm(instToDecode)), 2);
-		pr.toMemoryVal = RegisterFile.registers[Integer.parseInt(getDest(instToDecode), 2)];
-
-		//		switch (getOpcode(instToDecode)) {
-		//		case "0010"://add Imm
-		//			ALU.ALUEvaluator("0010", RegisterFile.registers[Integer.parseInt(getSrcOneImm(instToDecode), 2)],
-		//					Integer.parseInt(getImm(instToDecode), 2));
-		//			break;
-		//		case "0101"://and Imm
-		//			ALU.ALUEvaluator("0000", RegisterFile.registers[Integer.parseInt(getSrcOneImm(instToDecode), 2)],
-		//					RegisterFile.registers[Integer.parseInt(getImm(instToDecode), 2)]);
-		//			break;
-		//		case "1000"://lw
-		//			ALU.ALUEvaluator("0010", RegisterFile.registers[Integer.parseInt(getSrcOneImm(instToDecode), 2)],
-		//					RegisterFile.registers[Integer.parseInt(getImm(instToDecode), 2)]);
-		//			break;
-		//		case "1001"://sw
-		//			ALU.ALUEvaluator("0010", RegisterFile.registers[Integer.parseInt(getSrcOneImm(instToDecode), 2)],
-		//					RegisterFile.registers[Integer.parseInt(getImm(instToDecode), 2)]);
-		//			break;
-		//		case "1010"://beq
-		//			ALU.ALUEvaluator("0011", RegisterFile.registers[Integer.parseInt(getSrcOneImm(instToDecode), 2)],
-		//					RegisterFile.registers[Integer.parseInt(getImm(instToDecode), 2)]);
-		//			break;
-		//		case "1011"://blt
-		//			ALU.ALUEvaluator("0011", RegisterFile.registers[Integer.parseInt(getSrcOneImm(instToDecode), 2)],
-		//					RegisterFile.registers[Integer.parseInt(getImm(instToDecode), 2)]);
-		//			break;
-		//		case "1100"://slt Imm
-		//			ALU.ALUEvaluator("0111", RegisterFile.registers[Integer.parseInt(getSrcOne(instToDecode), 2)],
-		//					RegisterFile.registers[Integer.parseInt(getSrcOneImm(instToDecode), 2)]);
-		//			break;
-		//
-		//		default:
-		//			System.out.println("This is not a correct I-Format Instruction");
-		//
-		//		}
-
-	}
-
+	//Sign Extender Module.
 	public static String SingExtender(String s) {
 		while (s.length() < 32) {
 			if (s.charAt(0) == '1') {
@@ -551,10 +472,7 @@ public class Controller {
 		return s;
 	}
 
-	// I-type : 2 bits types 5 bits destination 5bits src1 5 bits Imm
-	//	public static String getSrcOneImm(String s) {
-	//		return s.substring(7, 12);
-	//	}
+	//Group of Methods for fast String Extraction of parts of instructions.
 
 	public static String getImm(String s) {
 		return s.substring(12, 28);
@@ -589,27 +507,7 @@ public class Controller {
 	}
 
 }
-/*
- * /First Cycle Instruction 1 in pipeline[0] == Fetched/de (instr) Second CYcle
- * Instruction 1 in pipeline[1] == Decoded/Ex ( inst+ 2 32-bit values) Second
- * CYcle Instruction 2 in Pipeline[0] fetched
- *
- */
-
-//class EX {
-//	int val1, val2;
-//	String operation;
-//}
-//
-//class M {
-//	int address;
-//
-//}
-//
-//class WB {
-//	int reg;
-//}
-
+//Class Representing the Pipeline Register
 class PipeLineRegister {
 	boolean regDest, branch, memRead, memToReg, memWrite, ALUsrc, RegWrite, jump, shamt;
 	String AlUop;
@@ -623,10 +521,3 @@ class PipeLineRegister {
 	boolean Zero;
 
 }
-//[pr1, pr2, pr3, pr4,pr5]
-//[pr6, pr1, pr2, pr3, pr4]
-
-/*
- * R type dest, src1,src2,operation EX : val src1, val src2, operation M: null
- * WB: dest lw dst src imm sw src1 src2 imm
- */

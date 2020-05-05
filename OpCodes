@@ -1,0 +1,57 @@
+/* Type:
+ * R: 00
+ * I: 01
+ * J: 10
+ */
+
+/* R Type Format
+Type 2
+Reg1  5 Destionation
+reg2   5 Source 1
+reg3   5 Source 2
+shamt  11 (10101010110)%(32)
+OpCode 4 
+ */
+
+/*I Type
+Type 2
+Reg1  5 Destionation
+reg2   5 Source 1
+Imeediate 16
+OpCode 4 
+ */
+
+/*
+//J type
+2 Bit Type
+5 Source Address
+21 Not Used
+4 Opcode8 */
+/*Op code list:
+0. Sub. 0000
+1. Add. 0001
+2. Add immediate. 0010
+3. Multiply.      0011
+4. Or. 0100
+5. And immediate. 0101
+6. Shift right logical. 0110
+7. Shift left logical. 0111
+8. Load word. 1000
+9. Store word. 1001
+10. Branch on equal. 1010
+11. Branch on less than. 1011
+12. Set on less than immediate. 1100
+13. Jump Register. 1101
+ */
+1-Addi $1, $2,3 
+2-Lw $1, 0($2) 
+3-beq $8,$0, 1 
+4-Add $4, $2,$3 
+5-Or $7, $5,$6 
+6-sw $2, 4($1) 
+01000010001000000000000000110101
+01000010001000000000000000001000
+01010000000000000000000000011010
+00001000001000011000000000000001
+00001110010100110000000000000100
+01000100000100000000000001001001
