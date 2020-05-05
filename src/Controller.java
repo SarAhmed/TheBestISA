@@ -16,7 +16,7 @@ public class Controller {
 	public static void main(String[] args) {
 		init();
 		Memory.readCode();
-		while (Memory.hasMoreInstruction() || !isNull()) { //BUG HERE
+		while (Memory.hasMoreInstruction() || !isNull()) { 
 			nextCycle();
 			System.out.println("After clock cycle: " + cycle);
 			System.out.println();
