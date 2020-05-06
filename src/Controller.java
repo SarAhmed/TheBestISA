@@ -71,7 +71,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = true;
 			pr.RegWrite = true;
 			pr.shamt = false;
 
@@ -84,7 +83,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = true;
 			pr.RegWrite = true;
 			pr.shamt = false;
 
@@ -97,7 +95,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = false;
 			pr.RegWrite = true;
 			pr.shamt = false;
 
@@ -110,7 +107,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = true;
 			pr.RegWrite = true;
 			pr.shamt = false;
 
@@ -123,7 +119,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = true;
 			pr.RegWrite = true;
 			pr.shamt = false;
 
@@ -136,7 +131,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = false;
 			pr.RegWrite = true;
 			pr.shamt = false;
 
@@ -149,7 +143,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = true;
 			pr.RegWrite = true;
 			pr.shamt = true;
 			break;
@@ -161,7 +154,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = true;
 			pr.RegWrite = true;
 			pr.shamt = true;
 			break;
@@ -173,7 +165,6 @@ public static boolean isNull() {
 			pr.memRead = true;
 			pr.memToReg = true;
 			pr.memWrite = false;
-			pr.regDest = false;
 			pr.RegWrite = true;
 			pr.shamt = false;
 			break;
@@ -185,7 +176,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = true;
-			pr.regDest = false;
 			pr.RegWrite = false;
 			pr.shamt = false;
 			break;
@@ -197,7 +187,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = false;
 			pr.RegWrite = false;
 			pr.shamt = false;
 			break;
@@ -210,7 +199,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = false;
 			pr.RegWrite = false;
 			pr.shamt = false;
 			break;
@@ -222,7 +210,6 @@ public static boolean isNull() {
 			pr.memRead = false;
 			pr.memToReg = false;
 			pr.memWrite = false;
-			pr.regDest = false;
 			pr.RegWrite = true;
 			pr.shamt = false;
 			break;
@@ -287,8 +274,8 @@ public static boolean isNull() {
 		System.out.printf("WB control: memToReg-> %d, RegWrite-> %d\n", (pr.memToReg ? 1 : 0), (pr.RegWrite ? 1 : 0));
 		System.out.printf("Memory control: memRead-> %d, memWrite-> %d, branch-> %d, jump-> %d\n", (pr.memRead ? 1 : 0),
 				(pr.memWrite ? 1 : 0), (pr.branch ? 1 : 0), (pr.jump ? 1 : 0));
-		System.out.printf("EX control: ALUsrc-> %d, ALUop-> %s, regDest-> %d, shamt->%d\n", (pr.ALUsrc ? 1 : 0),
-				pr.AlUop, (pr.regDest ? 1 : 0), (pr.shamt ? 1 : 0));
+		System.out.printf("EX control: ALUsrc-> %d, ALUop-> %s, shamt->%d\n", (pr.ALUsrc ? 1 : 0),
+				pr.AlUop,(pr.shamt ? 1 : 0));
 		System.out.println("---------------------------");
 
 	}
@@ -399,7 +386,7 @@ public static boolean isNull() {
 			pr.WBvalue = Memory.readData(Integer.toBinaryString(address));
 		}
 		if (pr.memWrite) {
-			int data = pr.src1Val;
+			int data = pr.toMemoryVal;
 			Memory.writeData(Integer.toBinaryString(address), data);
 
 		}
@@ -416,11 +403,8 @@ public static boolean isNull() {
 		System.out.println("Mem stage");
 		System.out.println("Instruction: "+pr.instruction);
 		System.out.println("ALU result/addres: " + InstAsString(pr.ALUresult));
-		System.out.println("Register value to write to memory: " + InstAsString(pr.toMemoryVal));
-		
+		System.out.println("Register value to write to memory: " + (pr.memWrite ? InstAsString(pr.toMemoryVal) : "do not care"));
 		System.out.println("Memory word read: " + (pr.memRead ? InstAsString(pr.WBvalue) : "do not care"));
-		System.out.println("Memory word write: " + (pr.memRead ? InstAsString(pr.src1Val) : "do not care"));
-
 		System.out.println("Control signals -->");
 		System.out.printf("WB control: memToReg-> %d, RegWrite-> %d\n", (pr.memToReg ? 1 : 0), (pr.RegWrite ? 1 : 0));
 
@@ -511,7 +495,7 @@ public static boolean isNull() {
 }
 //Class Representing the Pipeline Register
 class PipeLineRegister {
-	boolean regDest, branch, memRead, memToReg, memWrite, ALUsrc, RegWrite, jump, shamt;
+	boolean  branch, memRead, memToReg, memWrite, ALUsrc, RegWrite, jump, shamt;
 	String AlUop;
 	String instruction;
 	int PCval;
