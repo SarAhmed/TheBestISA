@@ -326,7 +326,10 @@ public static boolean isNull() {
 			if (pr.ALUsrc) {
 				res = ALU.ALUEvaluator(pr.AlUop, pr.src1Val, pr.ImmediateVal);
 			} else {
-				res = ALU.ALUEvaluator(pr.AlUop, pr.src1Val, pr.src2Val);
+				if (!pr.branch)
+					res = ALU.ALUEvaluator(pr.AlUop, pr.src1Val, pr.src2Val);
+				else
+					res = ALU.ALUEvaluator(pr.AlUop, pr.toMemoryVal, pr.src1Val);
 
 			}
 
@@ -334,14 +337,7 @@ public static boolean isNull() {
 			pr.Zero = ALU.isZero();
 		}
 
-		/*
-		 * 
-		 * zero flag: 1 branch address: 0000 0000 0000 0000 0000 0000 0000 1000 ALU
-		 * result/address: 0000 0000 0000 0000 0000 0000 0000 0000 register value to
-		 * write to memory: 0000 0000 0000 0000 0000 0000 0000 0000 rt/rd register:
-		 * 01001 WB controls: MemToReg: 0, RegWrite: 1 MEM controls: MemRead: 1,
-		 * MemWrite: 0, Branch: 0
-		 */
+	
 		String instToDecode = pr.instruction;
 		String src1 = getSrcOne(instToDecode);
 		String src2 = getSrcTwo(instToDecode);
@@ -457,6 +453,10 @@ public static boolean isNull() {
 		}
 		return s;
 	}
+	
+	
+	
+	
 
 	//Group of Methods for fast String Extraction of parts of instructions.
 
