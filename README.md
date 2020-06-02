@@ -1,5 +1,5 @@
 # Pipelined MIPS datapath simulator
-Implemented with Java
+* Implemented with Java
 ### Description
 * This simulator is a low-level cycle-accurate pipelined MIPS datapath simulator that simulates the datapath including all of its storage components (register file, memories, and pipeline registers) and all of its control signals.
 
